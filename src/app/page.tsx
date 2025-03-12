@@ -1,101 +1,108 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+import LogsDataTable from "@/components/LogsDataTable";
+import Navbar from "@/components/Navbar";
+import StatsCards from "@/components/StatsCards";
+import { useAuth } from "@/context/AuthContext";
+import { FileUp, Filter, Search } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function App() {
+    const { user, signOut } = useAuth()
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files) return;
+
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append('logFile', file);
+
+        setIsUploading(true);
+        const toastId = toast.loading('Uploading log file...');
+
+        try {
+            const response = await fetch('/api/upload-logs', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Upload failed');
+            }
+
+            const { jobId } = await response.json();
+            toast.success('Log file uploaded successfully', { id: toastId });
+            console.log('Upload successful. Job ID:', jobId);
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            toast.error('Failed to upload log file', { id: toastId });
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Navbar */}
+            <Navbar avatar={user?.user_metadata.avatar_url}/>
+
+            {/* Main Content */}
+            <main className="py-6">
+                <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    {/* Header */}
+                    <div className="md:flex md:items-center md:justify-between">
+                        <div className="flex-1 min-w-0">
+                            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate">
+                                Log Analytics Dashboard
+                            </h2>
+                        </div>
+                        <div className="flex mt-4 md:mt-0 md:ml-4">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search logs..."
+                                    className="w-full px-4 py-2 pl-10 text-sm border rounded-md text-black border-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                />
+                                <Search
+                                    size={16}
+                                    className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
+                                />
+                            </div>
+                            <button className="inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <Filter size={16} className="mr-2" />
+                                Filter
+                            </button>
+                            <label
+                                htmlFor="file-upload"
+                                className={`inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-white border border-transparent rounded-md shadow-sm cursor-pointer ${
+                                    isUploading 
+                                        ? 'bg-green-400 cursor-not-allowed'
+                                        : 'bg-green-600 hover:bg-green-700'
+                                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
+                            >
+                                <FileUp size={16} className={`mr-2 ${isUploading ? 'animate-pulse' : ''}`} />
+                                {isUploading ? 'Uploading...' : 'Upload Log'}
+                                <input
+                                    id="file-upload"
+                                    type="file"
+                                    accept=".log"
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                    disabled={isUploading}
+                                />
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Stats Cards */}
+                    <StatsCards />
+
+                    {/* Tabs and Table */}
+                    <LogsDataTable />
+                </div>
+            </main>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
