@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     AlertCircle,
     Clock,
@@ -22,30 +22,8 @@ import {
     Pie,
     Cell,
 } from "recharts";
-
-// Define types for log data
-interface LogData {
-    id: string;
-    job_id: number;
-    file_id: string;
-    processed_at: string;
-    total_lines: number;
-    error_count: number;
-    status: string;
-    job_created_at: string;
-    user_id: string;
-}
-
-// Define types for error types and IP distribution
-interface ErrorType {
-    name: string;
-    count: number;
-}
-
-interface IPDistribution {
-    name: string;
-    count: number;
-}
+import { LogStatItem } from "@/types/log-stat-item";
+import { formatLogStatItems, LogData } from "@/workers/logDataFormatter";
 
 // Tabs Component Props
 interface TabsProps {
@@ -224,46 +202,17 @@ const CardTitle: React.FC<CardTitleProps> = ({ className, children }) => {
 };
 
 const LogStatsDashboard: React.FC = () => {
-    // Sample data from the CSV
-    const logData: LogData[] = [
-        {
-            id: "a4505eb4-0c3a-400e-8f87-5849f8a01c80",
-            job_id: 40,
-            file_id: "log-1741861234361.log",
-            processed_at: "2025-03-13 10:21:53.291+00",
-            total_lines: 399,
-            error_count: 90,
-            status: "completed",
-            job_created_at: "2025-03-13 10:20:34.843+00",
-            user_id: "0c4ed813-b714-43bc-b78d-ec0413940859",
-        },
-        {
-            id: "f4e90f93-a9ca-4930-8d03-a721dc5efa68",
-            job_id: 43,
-            file_id: "log-1741861789994.log",
-            processed_at: "2025-03-13 10:29:51.279+00",
-            total_lines: 490,
-            error_count: 112,
-            status: "completed",
-            job_created_at: "2025-03-13 10:29:50.536+00",
-            user_id: "0c4ed813-b714-43bc-b78d-ec0413940859",
-        },
-    ];
-    const errorTypes: ErrorType[] = [
-        { name: "Database Issues", count: 25 },
-        { name: "File Operations", count: 22 },
-        { name: "Connection Problems", count: 18 },
-        { name: "Invalid Input", count: 15 },
-        { name: "API Errors", count: 12 },
-        { name: "Permission Issues", count: 10 },
-        { name: "Configuration Problems", count: 8 },
-    ];
+    const [logsData, setLogsData] = useState<LogStatItem[]>([]);
 
-    const ipDistribution: IPDistribution[] = [
-        { name: "192.168.1.x", count: 12 },
-        { name: "203.0.113.x", count: 5 },
-        { name: "10.0.0.x", count: 2 },
-    ];
+    useEffect(() => {
+        fetch("/api/stats")
+            .then((res) => res.json())
+            .then((data) => setLogsData(data))
+            .catch((error) => console.error("Error fetching data:", error));
+    }, []);
+
+    const { logData, errorTypes, ipDistribution } =
+        formatLogStatItems(logsData);
 
     const calculateProcessingTime = (job: LogData): number => {
         const processedTime = new Date(job.processed_at).getTime();
@@ -291,8 +240,8 @@ const LogStatsDashboard: React.FC = () => {
     ];
 
     return (
-        <div className="bg-gray-50 min-h-screen py-3 text-gray-800">
-            <div className="w-full max-h-screen p-4 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="bg-gray-50 h-full py-3 text-gray-800 overflow-y-auto">
+            <div className="w-full p-4 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 flex flex-col">
                 <div className="mb-6">
                     <h1 className="text-2xl font-bold text-gray-800">
                         Log Analytics
@@ -302,39 +251,42 @@ const LogStatsDashboard: React.FC = () => {
                     </p>
                 </div>
 
-                <Tabs defaultValue="overview" className="w-full">
+                <Tabs
+                    defaultValue="overview"
+                    className="w-full flex-grow overflow-y-auto"
+                >
                     <TabsList className="grid grid-cols-5 mb-6">
                         <TabsTrigger
                             value="overview"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 cursor-pointer"
                         >
                             <FileText size={16} />
                             <span>Overview</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="errors"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 cursor-pointer"
                         >
                             <AlertCircle size={16} />
                             <span>Error Analysis</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="network"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 cursor-pointer"
                         >
                             <Server size={16} />
                             <span>Network</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="performance"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 cursor-pointer"
                         >
                             <Clock size={16} />
                             <span>Performance</span>
                         </TabsTrigger>
                         <TabsTrigger
                             value="raw"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 cursor-pointer"
                         >
                             <Search size={16} />
                             <span>Raw Data</span>
@@ -411,7 +363,7 @@ const LogStatsDashboard: React.FC = () => {
                             </Card>
                         </div>
 
-                        <Card>
+                        {/* <Card>
                             <CardHeader>
                                 <CardTitle>Summary Statistics</CardTitle>
                             </CardHeader>
@@ -469,7 +421,7 @@ const LogStatsDashboard: React.FC = () => {
                                     </BarChart>
                                 </ResponsiveContainer>
                             </CardContent>
-                        </Card>
+                        </Card> */}
                     </TabsContent>
 
                     {/* Error Analysis Tab */}
@@ -488,7 +440,12 @@ const LogStatsDashboard: React.FC = () => {
                                     >
                                         <PieChart>
                                             <Pie
-                                                data={errorTypes}
+                                                data={errorTypes
+                                                    .sort(
+                                                        (a, b) =>
+                                                            b.count - a.count
+                                                    )
+                                                    .slice(0, 5)}
                                                 cx="50%"
                                                 cy="50%"
                                                 outerRadius={100}
@@ -497,8 +454,13 @@ const LogStatsDashboard: React.FC = () => {
                                                 nameKey="name"
                                                 label
                                             >
-                                                {errorTypes.map(
-                                                    (entry, index) => (
+                                                {errorTypes
+                                                    .sort(
+                                                        (a, b) =>
+                                                            b.count - a.count
+                                                    )
+                                                    .slice(0, 5)
+                                                    .map((entry, index) => (
                                                         <Cell
                                                             key={`cell-${index}`}
                                                             fill={
@@ -508,8 +470,7 @@ const LogStatsDashboard: React.FC = () => {
                                                                 ]
                                                             }
                                                         />
-                                                    )
-                                                )}
+                                                    ))}
                                             </Pie>
                                             <Tooltip />
                                             <Legend />
@@ -539,8 +500,12 @@ const LogStatsDashboard: React.FC = () => {
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
-                                                {errorTypes.map(
-                                                    (error, index) => (
+                                                {errorTypes
+                                                    .sort(
+                                                        (a, b) =>
+                                                            b.count - a.count
+                                                    )
+                                                    .map((error, index) => (
                                                         <tr key={index}>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                                 {error.name}
@@ -565,8 +530,7 @@ const LogStatsDashboard: React.FC = () => {
                                                                 %
                                                             </td>
                                                         </tr>
-                                                    )
-                                                )}
+                                                    ))}
                                             </tbody>
                                         </table>
                                     </div>
@@ -590,7 +554,13 @@ const LogStatsDashboard: React.FC = () => {
                                         >
                                             <PieChart>
                                                 <Pie
-                                                    data={ipDistribution}
+                                                    data={ipDistribution
+                                                        .sort(
+                                                            (a, b) =>
+                                                                b.count -
+                                                                a.count
+                                                        )
+                                                        .slice(0, 5)}
                                                     cx="50%"
                                                     cy="50%"
                                                     outerRadius={100}
@@ -599,8 +569,14 @@ const LogStatsDashboard: React.FC = () => {
                                                     nameKey="name"
                                                     label
                                                 >
-                                                    {ipDistribution.map(
-                                                        (entry, index) => (
+                                                    {ipDistribution
+                                                        .sort(
+                                                            (a, b) =>
+                                                                b.count -
+                                                                a.count
+                                                        )
+                                                        .slice(0, 5)
+                                                        .map((entry, index) => (
                                                             <Cell
                                                                 key={`cell-${index}`}
                                                                 fill={
@@ -610,8 +586,7 @@ const LogStatsDashboard: React.FC = () => {
                                                                     ]
                                                                 }
                                                             />
-                                                        )
-                                                    )}
+                                                        ))}
                                                 </Pie>
                                                 <Tooltip />
                                                 <Legend />
@@ -634,8 +609,13 @@ const LogStatsDashboard: React.FC = () => {
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
-                                                {ipDistribution.map(
-                                                    (ip, index) => (
+                                                {ipDistribution
+                                                    .sort(
+                                                        (a, b) =>
+                                                            b.count - a.count
+                                                    )
+                                                    .slice(0, 100)
+                                                    .map((ip, index) => (
                                                         <tr key={index}>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                                                 {ip.name}
@@ -660,8 +640,7 @@ const LogStatsDashboard: React.FC = () => {
                                                                 %
                                                             </td>
                                                         </tr>
-                                                    )
-                                                )}
+                                                    ))}
                                             </tbody>
                                         </table>
                                     </div>
@@ -672,6 +651,66 @@ const LogStatsDashboard: React.FC = () => {
 
                     {/* Performance Tab */}
                     <TabsContent value="performance" className="space-y-4">
+                        {/* <Card>
+                            <CardHeader>
+                                <CardTitle>Processing Timeline</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <BarChart
+                                        data={logData.map((job) => ({
+                                            name:
+                                                job.file_id.substring(0, 12) +
+                                                "...",
+                                            time: parseFloat(
+                                                calculateProcessingTime(
+                                                    job
+                                                ).toString()
+                                            ),
+                                            linesPerSec:
+                                                job.total_lines /
+                                                parseFloat(
+                                                    calculateProcessingTime(
+                                                        job
+                                                    ).toString()
+                                                ),
+                                        }))}
+                                        margin={{
+                                            top: 20,
+                                            right: 30,
+                                            left: 20,
+                                            bottom: 5,
+                                        }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="name" />
+                                        <YAxis
+                                            yAxisId="left"
+                                            orientation="left"
+                                        />
+                                        <YAxis
+                                            yAxisId="right"
+                                            orientation="right"
+                                        />
+                                        <Tooltip />
+                                        <Legend />
+                                        <Bar
+                                            yAxisId="left"
+                                            dataKey="time"
+                                            name="Processing Time (sec)"
+                                            fill="#8884d8"
+                                        />
+                                        <Bar
+                                            yAxisId="right"
+                                            dataKey="linesPerSec"
+                                            name="Lines/Second"
+                                            fill="#82ca9d"
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card> */}
+
                         <Card>
                             <CardHeader>
                                 <CardTitle>Processing Performance</CardTitle>
@@ -730,66 +769,6 @@ const LogStatsDashboard: React.FC = () => {
                                 </div>
                             </CardContent>
                         </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Processing Timeline</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart
-                                        data={logData.map((job) => ({
-                                            name:
-                                                job.file_id.substring(0, 12) +
-                                                "...",
-                                            time: parseFloat(
-                                                calculateProcessingTime(
-                                                    job
-                                                ).toString()
-                                            ),
-                                            linesPerSec:
-                                                job.total_lines /
-                                                parseFloat(
-                                                    calculateProcessingTime(
-                                                        job
-                                                    ).toString()
-                                                ),
-                                        }))}
-                                        margin={{
-                                            top: 20,
-                                            right: 30,
-                                            left: 20,
-                                            bottom: 5,
-                                        }}
-                                    >
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="name" />
-                                        <YAxis
-                                            yAxisId="left"
-                                            orientation="left"
-                                        />
-                                        <YAxis
-                                            yAxisId="right"
-                                            orientation="right"
-                                        />
-                                        <Tooltip />
-                                        <Legend />
-                                        <Bar
-                                            yAxisId="left"
-                                            dataKey="time"
-                                            name="Processing Time (sec)"
-                                            fill="#8884d8"
-                                        />
-                                        <Bar
-                                            yAxisId="right"
-                                            dataKey="linesPerSec"
-                                            name="Lines/Second"
-                                            fill="#82ca9d"
-                                        />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </CardContent>
-                        </Card>
                     </TabsContent>
 
                     {/* Raw Data Tab */}
@@ -846,67 +825,6 @@ const LogStatsDashboard: React.FC = () => {
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                                             {job.status}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Processing Job Details</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Job ID
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Created At
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Processed At
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Processing Time
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    User ID
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {logData.map((job, index) => (
-                                                <tr key={index}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                        {job.job_id}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {formatTimestamp(
-                                                            job.job_created_at
-                                                        )}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {formatTimestamp(
-                                                            job.processed_at
-                                                        )}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {calculateProcessingTime(
-                                                            job
-                                                        )}
-                                                        s
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <span className="truncate max-w-xs inline-block">
-                                                            {job.user_id}
                                                         </span>
                                                     </td>
                                                 </tr>

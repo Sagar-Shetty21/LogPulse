@@ -1,5 +1,5 @@
-import { ExternalLink, MoreHorizontal } from 'lucide-react';
-import React, { useState } from 'react'
+import { ExternalLink, MoreHorizontal } from "lucide-react";
+import React, { useState } from "react";
 
 const LogsDataTable = () => {
     const [activeTab, setActiveTab] = useState("errors");
@@ -99,10 +99,7 @@ const LogsDataTable = () => {
             </div>
             <div className="hidden sm:block">
                 <div className="border-b border-gray-200">
-                    <nav
-                        className="flex -mb-px space-x-8"
-                        aria-label="Tabs"
-                    >
+                    <nav className="flex -mb-px space-x-8" aria-label="Tabs">
                         <button
                             onClick={() => setActiveTab("errors")}
                             className={`${
@@ -186,51 +183,45 @@ const LogsDataTable = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {statsData.errors.map(
-                                        (error) => (
-                                            <tr
-                                                key={error.id}
-                                                className="hover:bg-gray-50"
-                                            >
-                                                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                                    {new Date(error.timestamp).toLocaleString("en-GB", {
-                                                        day: "2-digit",
-                                                        month: "2-digit",
-                                                        year: "numeric",
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                        second: "2-digit",
-                                                        hour12: false,
-                                                    })}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className="inline-flex px-2 text-xs font-semibold leading-5 text-red-800 bg-red-100 rounded-full">
-                                                        {
-                                                            error.level
-                                                        }
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-900">
-                                                    {error.message}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                                    {error.source}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                                    {error.count}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                                                    <button className="text-indigo-600 hover:text-indigo-900">
-                                                        <ExternalLink
-                                                            size={
-                                                                16
-                                                            }
-                                                        />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        )
-                                    )}
+                                    {statsData.errors.map((error) => (
+                                        <tr
+                                            key={error.id}
+                                            className="hover:bg-gray-50"
+                                        >
+                                            <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                                {new Date(
+                                                    error.timestamp
+                                                ).toLocaleString("en-GB", {
+                                                    day: "2-digit",
+                                                    month: "2-digit",
+                                                    year: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                    second: "2-digit",
+                                                    hour12: false,
+                                                })}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="inline-flex px-2 text-xs font-semibold leading-5 text-red-800 bg-red-100 rounded-full">
+                                                    {error.level}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-900">
+                                                {error.message}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                                {error.source}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                                {error.count}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                                                <button className="text-indigo-600 hover:text-indigo-900">
+                                                    <ExternalLink size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
@@ -270,47 +261,37 @@ const LogsDataTable = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {statsData.keywords.map(
-                                        (keyword) => (
-                                            <tr
-                                                key={keyword.id}
-                                                className="hover:bg-gray-50"
-                                            >
-                                                <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
-                                                    {
-                                                        keyword.keyword
-                                                    }
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                                    {keyword.occurrences.toLocaleString()}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span
-                                                        className={`inline-flex px-2 text-xs font-semibold leading-5 rounded-full ${
-                                                            keyword.trend.startsWith(
-                                                                "+"
-                                                            )
-                                                                ? "text-red-800 bg-red-100"
-                                                                : "text-green-800 bg-green-100"
-                                                        }`}
-                                                    >
-                                                        {
-                                                            keyword.trend
-                                                        }
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                                                    <button className="text-gray-400 hover:text-gray-500">
-                                                        <MoreHorizontal
-                                                            size={
-                                                                16
-                                                            }
-                                                        />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        )
-                                    )}
+                                    {statsData.keywords.map((keyword) => (
+                                        <tr
+                                            key={keyword.id}
+                                            className="hover:bg-gray-50"
+                                        >
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
+                                                {keyword.keyword}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                                {keyword.occurrences.toLocaleString()}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    className={`inline-flex px-2 text-xs font-semibold leading-5 rounded-full ${
+                                                        keyword.trend.startsWith(
+                                                            "+"
+                                                        )
+                                                            ? "text-red-800 bg-red-100"
+                                                            : "text-green-800 bg-green-100"
+                                                    }`}
+                                                >
+                                                    {keyword.trend}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                                                <button className="text-gray-400 hover:text-gray-500">
+                                                    <MoreHorizontal size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
@@ -364,11 +345,10 @@ const LogsDataTable = () => {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span
                                                     className={`inline-flex px-2 text-xs font-semibold leading-5 rounded-full ${
-                                                        ip.status ===
-                                                        "normal"
+                                                        ip.status === "normal"
                                                             ? "text-green-800 bg-green-100"
                                                             : ip.status ===
-                                                                "warning"
+                                                              "warning"
                                                             ? "text-yellow-800 bg-yellow-100"
                                                             : "text-red-800 bg-red-100"
                                                     }`}
@@ -389,8 +369,12 @@ const LogsDataTable = () => {
                     )}
                 </div>
             </div>
+            <div className="text-center text-gray-400 text-sm my-8">
+                Note: The data shown here is hard-coded and not dynamically
+                rendered!
+            </div>
         </div>
-    )
-}
+    );
+};
 
-export default LogsDataTable
+export default LogsDataTable;
