@@ -14,15 +14,15 @@ export const config = {
 
 export async function POST(req: NextRequest) {
   try {
-    // Initialize Supabase with cookies
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabaseClient = createRouteHandlerClient({ 
+      cookies: () => cookieStore
+    });
 
     // Get the authenticated user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
 
-    if (!user) {
+    if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       .createSignedUrl(fileId, 60 * 60 * 24); // 24-hour expiration
 
     if (signedUrlError || !signedUrlData?.signedUrl) {
-      console.log('err',signedUrlError)
+      console.log('err', signedUrlError);
       throw new Error("Failed to generate signed URL from Supabase.");
     }
 

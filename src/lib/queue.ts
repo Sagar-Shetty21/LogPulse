@@ -1,5 +1,6 @@
 import { Queue, Worker } from 'bullmq';
 import { processLogFile } from '../workers/logProcessor';
+import { Server } from 'socket.io';
 
 const connection = {
   host: process.env.REDIS_HOST,
@@ -35,5 +36,11 @@ export async function addLogJob(fileUrl: string, fileId: string, userId: string)
     fileId,
     userId,
     timestamp: new Date().toISOString(),
+  });
+}
+
+export function setupQueueEvents(io: Server) {
+  logQueue.on('progress', ({ jobId, data }) => {
+    io.emit(`job-progress:${jobId}`, data);
   });
 } 

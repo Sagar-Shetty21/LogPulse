@@ -1,36 +1,41 @@
 {
-  "name": "logpulse-client",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
-    "@supabase/supabase-js": "^2.49.1",
-    "axios": "^1.8.3",
-    "bullmq": "^5.41.8",
-    "formidable": "^3.5.2",
-    "lucide-react": "^0.479.0",
-    "next": "15.2.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-hot-toast": "^2.5.2",
-    "ws": "^8.18.1"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/formidable": "^3.4.5",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.2.1",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+    "name": "logpulse-client",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "prepare": "next-ws patch",
+        "dev": "next dev --turbopack",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@supabase/auth-helpers-nextjs": "^0.10.0",
+        "@supabase/supabase-js": "^2.49.1",
+        "axios": "^1.8.3",
+        "bullmq": "^5.41.8",
+        "formidable": "^3.5.2",
+        "lucide-react": "^0.479.0",
+        "next": "15.2.1",
+        "next-ws": "^2.0.4",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-hot-toast": "^2.5.2",
+        "recharts": "^2.15.1",
+        "socket.io": "^4.8.1",
+        "socket.io-client": "^4.8.1",
+        "ws": "^8.18.1"
+    },
+    "devDependencies": {
+        "@eslint/eslintrc": "^3",
+        "@tailwindcss/postcss": "^4",
+        "@types/formidable": "^3.4.5",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "eslint": "^9",
+        "eslint-config-next": "15.2.1",
+        "tailwindcss": "^4",
+        "typescript": "^5"
+    }
 }

@@ -1,73 +1,65 @@
-import { QueueEvents } from 'bullmq';
-import { WebSocketServer } from 'ws';
-import { NextResponse } from 'next/server';
-import { IncomingMessage } from 'http';
-import { Socket } from 'net';
-
-const wss = new WebSocketServer({ noServer: true });
-const queueEvents = new QueueEvents('processingQueue', {
-  connection: {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-  }
-});
+import { QueueEvents } from "bullmq";
+import { WebSocket } from "ws";
 
 // Track connected clients
-const clients = new Set<import('ws').WebSocket>();
+const clients = new Set<WebSocket>();
 
-// Handle WebSocket connections
-wss.on('connection', (ws) => {
-  clients.add(ws);
-
-  ws.on('close', () => {
-    clients.delete(ws);
-  });
-});
-
-// Listen for job progress events
-queueEvents.on('progress', ({ jobId, data }) => {
-  const message = JSON.stringify({
-    type: 'progress',
-    jobId,
-    progress: data
-  });
-  
-  broadcast(message);
-});
-
-// Listen for job completion events
-queueEvents.on('completed', ({ jobId, returnvalue }) => {
-  const message = JSON.stringify({
-    type: 'completed',
-    jobId,
-    result: returnvalue
-  });
-  
-  broadcast(message);
+// Setup queue events
+const queueEvents = new QueueEvents("log-processing", {
+    connection: {
+        host: process.env.REDIS_HOST || "localhost",
+        port: parseInt(process.env.REDIS_PORT || "6379"),
+    },
 });
 
 // Broadcast message to all connected clients
 function broadcast(message: string) {
-  for (const client of clients) {
-    if (client.readyState === client.OPEN) {
-      client.send(message);
+    for (const client of clients) {
+        if (client.readyState === client.OPEN) {
+            client.send(message);
+        }
     }
-  }
 }
 
-// Handle WebSocket upgrade
-export function GET(req: Request) {
-  const upgradeHeader = req.headers.get('upgrade');
-  if (upgradeHeader !== 'websocket') {
-    return new NextResponse('Expected websocket', { status: 426 });
-  }
+// Initialize queue event listeners
+function initQueueEvents() {
+    // Listen for job progress events
+    queueEvents.on("progress", ({ jobId, data }) => {
+        const message = JSON.stringify({
+            type: "progress",
+            jobId,
+            progress: data,
+        });
+        broadcast(message);
+    });
 
-  wss.handleUpgrade(
-    req as unknown as IncomingMessage, 
-    (req as unknown as { socket: Socket }).socket,
-    Buffer.from(''), 
-    (ws) => {
-      wss.emit('connection', ws, req);
-    }
-  );
+    // Listen for job completion events
+    queueEvents.on("completed", ({ jobId, returnvalue }) => {
+        const message = JSON.stringify({
+            type: "completed",
+            jobId,
+            result: returnvalue,
+        });
+        broadcast(message);
+    });
+}
+
+// Initialize the queue events
+initQueueEvents();
+
+// This is the handler that next-ws will use
+export function SOCKET(
+    client: WebSocket,
+    request: import("http").IncomingMessage,
+    server: import("ws").WebSocketServer
+) {
+    // Add this client to our set of connected clients
+    clients.add(client);
+    console.log("Client connected");
+
+    // Handle client disconnection
+    client.on("close", () => {
+        clients.delete(client);
+        console.log("Client disconnected");
+    });
 }
