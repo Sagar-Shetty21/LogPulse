@@ -1,6 +1,7 @@
 // app/api/jobs/[jobId]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getAuthUser } from "@/lib/auth";
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,6 +12,8 @@ export async function GET(
     request: NextRequest,
     { params }: { params: { jobId: string } }
 ) {
+    const user = await getAuthUser();
+
     const jobId = params.jobId;
 
     if (!jobId) {
@@ -34,6 +37,12 @@ export async function GET(
 
         return NextResponse.json(data);
     } catch (error) {
+        if (error instanceof Error && error.message.includes("Unauthorized")) {
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 }
+            );
+        }
         console.error("Error fetching job stats:", error);
         return NextResponse.json(
             { error: "Failed to fetch job stats" },

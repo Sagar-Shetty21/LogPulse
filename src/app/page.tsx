@@ -5,12 +5,14 @@ import LogsDataTable from "@/components/LogsDataTable";
 import LogStatsModal from "@/components/LogStatsModal";
 import QueueStatus from "@/components/QueueStatus";
 import StatsCards from "@/components/StatsCards";
+import { useAuth } from "@/context/AuthContext";
 import { LogStatItem } from "@/types/log-stat-item";
 import { FileUp, Filter, List, Search } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
 export default function App() {
+    const { user, session } = useAuth();
     const [isUploading, setIsUploading] = useState(false);
     const [activeJobIds, setActiveJobIds] = useState<number[]>([]);
     const [searchLogs, setSearchLogs] = useState("");
@@ -38,9 +40,16 @@ export default function App() {
         const toastId = toast.loading("Uploading log file...");
 
         try {
+            if (!session) {
+                throw new Error("No session found");
+            }
+
             const response = await fetch("/api/upload-logs", {
                 method: "POST",
                 body: formData,
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
             });
 
             if (!response.ok) {
@@ -70,7 +79,15 @@ export default function App() {
         const toastId = toast.loading("Fetching log stats...");
 
         try {
-            const response = await fetch(`/api/stats/${jobId}`);
+            if (!session) {
+                throw new Error("No session found");
+            }
+
+            const response = await fetch(`/api/stats/${jobId}`, {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            });
 
             if (!response.ok) {
                 throw new Error("Failed to fetch log stats");
@@ -91,7 +108,15 @@ export default function App() {
         const toastId = toast.loading("Fetching queue status...");
 
         try {
-            const response = await fetch(`/api/queue-status`);
+            if (!session) {
+                throw new Error("No session found");
+            }
+
+            const response = await fetch(`/api/queue-status`, {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            });
 
             if (!response.ok) {
                 throw new Error("Failed to fetch queue status");

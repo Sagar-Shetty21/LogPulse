@@ -24,6 +24,8 @@ import {
 } from "recharts";
 import { LogStatItem } from "@/types/log-stat-item";
 import { formatLogStatItems, LogData } from "@/workers/logDataFormatter";
+import toast from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
 
 // Tabs Component Props
 interface TabsProps {
@@ -232,17 +234,47 @@ const SkeletonLoader: React.FC = () => {
 };
 
 const LogStatsDashboard: React.FC = () => {
+    const { user, session } = useAuth();
     const [logsData, setLogsData] = useState<LogStatItem[]>([]);
     const [isFetchingData, setIsFetchingData] = useState(true);
 
     useEffect(() => {
-        setIsFetchingData(true);
-        fetch("/api/stats")
-            .then((res) => res.json())
-            .then((data) => setLogsData(data))
-            .catch((error) => console.error("Error fetching data:", error))
-            .finally(() => setIsFetchingData(false));
-    }, []);
+        const fetchData = async () => {
+            setIsFetchingData(true);
+
+            try {
+                if (!session) {
+                    return;
+                }
+
+                const response = await fetch("/api/stats", {
+                    headers: {
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.json();
+                    throw new Error(
+                        errorMessage.error || "Failed to fetch data"
+                    );
+                }
+
+                const data = await response.json();
+                setLogsData(data);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                toast.error(
+                    error instanceof Error ? error.message : "An error occurred"
+                );
+                setLogsData([]); // Reset logs data on failure
+            } finally {
+                setIsFetchingData(false);
+            }
+        };
+
+        fetchData();
+    }, [session]);
 
     const { logData, errorTypes, ipDistribution } =
         formatLogStatItems(logsData);

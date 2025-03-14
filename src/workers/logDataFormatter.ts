@@ -30,7 +30,7 @@ export interface IPDistribution {
  */
 export function formatLogStatItems(logStatItems: LogStatItem[]) {
     // Extract basic log data
-    const logData: LogData[] = logStatItems?.map((item) => ({
+    const logData: LogData[] = logStatItems.map((item) => ({
         id: item.id,
         job_id: Number(item.job_id), // Converting to number as per interface definition
         file_id: item.file_id,
