@@ -1,20 +1,15 @@
 // app/api/jobs/[jobId]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { getAuthUser } from "@/lib/auth";
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabase } from "@/lib/supabase";
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { jobId: string } }
+    { params }: { params: Promise<{ jobId: string }> }
 ) {
     const user = await getAuthUser();
 
-    const jobId = params.jobId;
+    const { jobId } = await params;
 
     if (!jobId) {
         return NextResponse.json({ error: "Missing job ID" }, { status: 400 });
