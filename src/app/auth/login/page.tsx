@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
 import { Github } from "lucide-react";
 import React, { FormEvent, useState } from "react";
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 
 const Login = () => {
@@ -19,7 +19,7 @@ const Login = () => {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError(null);
-        
+
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
@@ -30,25 +30,25 @@ const Login = () => {
 
             if (data.user) {
                 setUser(data.user);
-                router.push('/dashboard');
+                router.push("/dashboard");
             }
         } catch (error: any) {
-            setError(error.message || 'An error occurred');
+            setError(error.message || "An error occurred");
         }
     };
 
     const handleGithubLogin = async () => {
         try {
             const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'github',
+                provider: "github",
                 options: {
-                    redirectTo: `${window.location.origin}/auth/callback`
-                }
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                },
             });
 
             if (error) throw error;
         } catch (error: any) {
-            setError(error.message || 'An error occurred');
+            setError(error.message || "An error occurred");
         }
     };
 
@@ -182,7 +182,10 @@ const Login = () => {
                 <div className="mt-6 text-center">
                     <p className="text-sm text-gray-600">
                         Don&apos;t have an account?{" "}
-                        <Link href="/auth/signup" className="cursor-pointer font-medium text-indigo-600 hover:text-indigo-500">
+                        <Link
+                            href="/auth/signup"
+                            className="cursor-pointer font-medium text-indigo-600 hover:text-indigo-500"
+                        >
                             Sign up
                         </Link>
                     </p>

@@ -12,6 +12,7 @@ const Navbar = () => {
     const pathname = usePathname();
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const isAuthPage = pathname.includes("auth");
 
     const linkClasses = (href: string) =>
         pathname === href
@@ -34,6 +35,10 @@ const Navbar = () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    if (isAuthPage) {
+        return null;
+    }
 
     return (
         <nav className="bg-white border-b border-gray-200">
