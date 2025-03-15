@@ -15,7 +15,7 @@ LogFlow is a modern microservice that handles large log file processing asynchro
 ## System Architecture
 
 -   **Frontend**: Next.js + React
--   **Backend**: Node.js with Express
+-   **Backend**: Next.js API's
 -   **Queue**: BullMQ (Redis)
 -   **Storage & Auth**: Supabase
 -   **Real-time Updates**: WebSockets
@@ -32,7 +32,7 @@ LogFlow is a modern microservice that handles large log file processing asynchro
 
 ### Prerequisites
 
--   Node.js 18+ and npm
+-   Node.js 20+ and npm
 -   Redis instance (local or cloud)
 -   Supabase account
 -   GitHub Developer account (for OAuth)
@@ -136,10 +136,7 @@ Docker will automatically set up Redis, the Next.js frontend, and the BullMQ wor
 
 The system uses the following tables in Supabase:
 
-1. `jobs` - Tracks job status and metadata
-2. `log_stats` - Stores processed log analytics
-3. `log_errors` - Detailed error information
-4. `log_ips` - IP address occurrences
+1. `log_stats` - Stores processed log analytics
 
 ## Performance Benchmarks
 
