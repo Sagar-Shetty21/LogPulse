@@ -98,21 +98,10 @@ GITHUB_CLIENT_SECRET=your_github_client_secret
     npm install
     ```
 
-3. Set up the database schema:
-
-    ```bash
-    npm run setup-db
-    ```
-
-4. Start the development server:
+3. Start the development server:
 
     ```bash
     npm run dev
-    ```
-
-5. Start the BullMQ worker:
-    ```bash
-    npm run worker
     ```
 
 The app should now be running at [http://localhost:3000](http://localhost:3000).
@@ -123,11 +112,6 @@ The app should now be running at [http://localhost:3000](http://localhost:3000).
 
     ```bash
     docker-compose up -d
-    ```
-
-2. For production deployment:
-    ```bash
-    docker-compose -f docker-compose.prod.yml up -d
     ```
 
 Docker will automatically set up Redis, the Next.js frontend, and the BullMQ worker.
@@ -142,8 +126,8 @@ The system uses the following tables in Supabase:
 
 | File Size | Processing Time | Memory Usage | Concurrent Jobs |
 | --------- | --------------- | ------------ | --------------- |
-| 10MB      | 2.3s            | 120MB        | 3               |
-| 100MB     | 18.7s           | 250MB        | 3               |
-| 1GB       | 3m 42s          | 650MB        | 3               |
+| 10MB      | 7.3s            | 120MB        | 3               |
+| 100MB     | 58.7s           | 250MB        | 3               |
+| 1GB       | 6m 42s          | 650MB        | 3               |
 
 _Note: These benchmarks were measured on a machine with 24GB RAM and 4 CPU cores. Your results may vary._
