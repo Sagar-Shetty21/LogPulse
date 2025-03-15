@@ -12,7 +12,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 const rateLimitStore = new Map();
 
 async function checkRateLimit(identifier: string) {
-    const MAX_REQUESTS = 3;
+    const MAX_REQUESTS = 100;
     const WINDOW_SIZE = 60; // seconds
     const now = Date.now();
 
