@@ -2,9 +2,7 @@ import { logQueue } from "../../../lib/queue";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { Readable } from "stream";
-import { supabase, supabaseAdmin } from "@/lib/supabase";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { supabaseAdmin } from "@/lib/supabase";
 import { getAuthUser } from "@/lib/auth";
 
 export const config = {

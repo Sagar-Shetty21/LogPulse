@@ -8,6 +8,42 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+// Store rate limit data in memory
+const rateLimitStore = new Map();
+
+async function checkRateLimit(identifier: string) {
+    const MAX_REQUESTS = 3;
+    const WINDOW_SIZE = 60; // seconds
+    const now = Date.now();
+
+    // Get existing data or create new entry
+    const data = rateLimitStore.get(identifier) || { count: 0, timestamp: now };
+
+    // Reset if window has passed
+    if ((now - data.timestamp) / 1000 > WINDOW_SIZE) {
+        console.log(`Rate limit window reset for ${identifier}`);
+        data.count = 0;
+        data.timestamp = now;
+    }
+
+    // Increment count
+    data.count++;
+
+    console.log(`Request ${data.count}/${MAX_REQUESTS} for ${identifier}`);
+
+    // Store updated data
+    rateLimitStore.set(identifier, data);
+
+    const isLimited = data.count > MAX_REQUESTS;
+    console.log(`Rate limited: ${isLimited}`);
+
+    return {
+        limited: isLimited,
+        remaining: Math.max(0, MAX_REQUESTS - data.count),
+        reset: Math.floor(data.timestamp / 1000) + WINDOW_SIZE,
+    };
+}
+
 export async function middleware(req: NextRequest) {
     const res = NextResponse.next();
 
@@ -49,6 +85,32 @@ async function handlePageMiddleware(req: NextRequest, res: NextResponse) {
 
 // API middleware - handles JWT verification for API routes
 async function handleApiMiddleware(req: NextRequest) {
+    // Get client IP address for rate limiting
+    const clientIp =
+        req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+    console.log(`Request from IP: ${clientIp}`);
+
+    // Check rate limit
+    const rateLimit = await checkRateLimit(clientIp);
+
+    if (rateLimit.limited) {
+        console.log(`Rate limit exceeded for ${clientIp}`);
+        return NextResponse.json(
+            { error: "Rate limit exceeded. Please try again later." },
+            {
+                status: 429,
+                headers: {
+                    "Retry-After": String(
+                        rateLimit.reset - Math.floor(Date.now() / 1000)
+                    ),
+                    "X-RateLimit-Limit": String(3),
+                    "X-RateLimit-Remaining": String(rateLimit.remaining),
+                    "X-RateLimit-Reset": String(rateLimit.reset),
+                },
+            }
+        );
+    }
+
     // Get the authorization header
     const authHeader = req.headers.get("authorization");
 
