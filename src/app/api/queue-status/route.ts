@@ -9,19 +9,31 @@ export async function GET(request: NextRequest) {
     try {
         const user = await getAuthUser();
 
-        const [waiting, active, completed, failed] = await Promise.all([
-            logQueue.getWaitingCount(),
-            logQueue.getActiveCount(),
-            logQueue.getCompletedCount(),
-            logQueue.getFailedCount(),
-        ]);
+        // Get all jobs from different states
+        const [waitingJobs, activeJobs, completedJobs, failedJobs] =
+            await Promise.all([
+                logQueue.getJobs(["waiting"]),
+                logQueue.getJobs(["active"]),
+                logQueue.getJobs(["completed"]),
+                logQueue.getJobs(["failed"]),
+            ]);
+
+        // Filter jobs by current user's ID
+        const filterByUserId = (jobs: any[]) => {
+            return jobs.filter((job) => job.data.userId === user.id);
+        };
+
+        const userWaitingJobs = filterByUserId(waitingJobs);
+        const userActiveJobs = filterByUserId(activeJobs);
+        const userCompletedJobs = filterByUserId(completedJobs);
+        const userFailedJobs = filterByUserId(failedJobs);
 
         return NextResponse.json(
             {
-                waiting,
-                active,
-                completed,
-                failed,
+                waiting: userWaitingJobs.length,
+                active: userActiveJobs.length,
+                completed: userCompletedJobs.length,
+                failed: userFailedJobs.length,
             },
             { status: 200 }
         );
