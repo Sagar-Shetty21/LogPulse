@@ -122,7 +122,7 @@ export async function processLogFile(job: Job<LogJob>) {
                 error_count: errorCount,
                 errors,
                 keywords,
-                ips: Array.from(ipSet), // Convert Set to array
+                ips: Array.from(ipSet),
                 status: "completed",
             },
         ]);
