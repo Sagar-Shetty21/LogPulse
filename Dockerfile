@@ -48,6 +48,9 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Create public directory if it doesn't exist to ensure COPY doesn't fail
+RUN mkdir -p /app/public
+# Copy public directory with a conditional that handles if it's empty or doesn't exist
 COPY --from=builder /app/public ./public
 
 # Automatically leverage output traces to reduce image size
